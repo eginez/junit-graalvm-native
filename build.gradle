@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group 'xyz.eginez'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.1'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.1'
+    compile files("/Users/eginez/bin/graalvm/graalvm-ce-java8-20.0.0/Contents/Home/jre/lib/jvmci/jvmci-api.jar")
+    compile (group: 'org.graalvm.nativeimage', name: 'svm', version: '20.0.0')
+
+}
