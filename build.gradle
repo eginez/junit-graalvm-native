@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 plugins {
     id 'java'
 }
@@ -11,10 +13,52 @@ repositories {
     mavenCentral()
 }
 
-dependencies {
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.1'
-    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.1'
-    compile files("/Users/eginez/bin/graalvm/graalvm-ce-java8-20.0.0/Contents/Home/jre/lib/jvmci/jvmci-api.jar")
-    compile (group: 'org.graalvm.nativeimage', name: 'svm', version: '20.0.0')
-
+test {
+    useJUnitPlatform()
 }
+
+dependencies {
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
+    compile group: 'org.junit.platform', name: 'junit-platform-console-standalone', version: '1.6.2'
+    compile ("org.junit.platform:junit-platform-launcher:1.6.2")
+    compileOnly (group: 'org.graalvm.nativeimage', name: 'svm', version: '20.0.0')
+}
+
+def customTest = tasks.create(name: "customTest", type: JavaExec) {
+    classpath += files(Paths.get(project.buildDir.absolutePath, "classes", "test").toAbsolutePath())
+    classpath += sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
+    main = "org.junit.platform.console.ConsoleLauncher"
+    args = ["-c", "xyz.eginez.junit.TestSimple"]
+}
+customTest.dependsOn(classes)
+
+def buildTest = tasks.create(name: "buildTest", type: Exec) {
+    def classpath = files(Paths.get(project.buildDir.absolutePath, "classes", "java", "test").toAbsolutePath())
+    classpath += sourceSets.test.runtimeClasspath
+
+    //TODO what do we do with classes that were discovered?
+    def args = ["-c", "xyz.eginez.junit.TestSimple"]
+
+    def execLine = ["native-image"]
+    if (project.hasProperty("debug")) {
+        execLine.add('--debug-attach')
+    }
+
+    def main = "org.junit.platform.console.ConsoleLauncher"
+    execLine.addAll(['--verbose',
+                     '--no-server',
+                     '--allow-incomplete-classpath',
+                     '--enable-all-security-services',
+                     '-H:+ReportExceptionStackTraces',
+                     '-H:+TraceClassInitialization',
+                     "-H:Path=${project.buildDir}",
+                     "-H:Name=testBin"])
+    def allcp = classpath.toString()
+    def rcp = classpath.join(":")
+    execLine.addAll(['--no-fallback', '-cp', rcp])
+    execLine.add(main)
+    setCommandLine(execLine)
+}
+
+buildTest.dependsOn(classes, test)
