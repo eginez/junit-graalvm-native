@@ -1,5 +1,7 @@
 package xyz.eginez.junit;
 
+import org.graalvm.nativeimage.ImageInfo;
+import org.graalvm.nativeimage.hosted.RuntimeReflection;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestWatcher;
@@ -23,7 +25,5 @@ public class NativeImageExtension implements TestWatcher, AfterAllCallback {
     public void afterAll(ExtensionContext context) throws Exception {
         final String all = testClasses.stream().map(Class::getName).collect(Collectors.joining(","));
         System.out.println(all);
-
-
     }
 }
