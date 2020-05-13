@@ -18,66 +18,8 @@ test {
 }
 
 dependencies {
-    compile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
-    compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
-    compile group: 'org.junit.platform', name: 'junit-platform-console', version: '1.6.2'
     //compile group: 'info.picocli', name: 'picocli', version: '4.2.0'
-    //This needs to be run on the junit cli
+    //This needs to be run on the xyz.eginez.junit cli
     //annotationProcessor 'info.picocli:picocli-codegen:4.2.0'
-
-    compile ("org.junit.platform:junit-platform-launcher:1.6.2")
-    compile (group: 'org.graalvm.nativeimage', name: 'svm', version: '20.0.0')
-    //testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-console-standalone', version: '1.6.2'
+    //testRuntimeOnly group: 'org.xyz.eginez.junit.platform', name: 'xyz.eginez.junit-platform-console-standalone', version: '1.6.2'
 }
-
-/* pico cli generation
-compileJava {
-    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
-}
- */
-
-def customTest = tasks.create(name: "customTest", type: JavaExec) {
-    classpath += files(Paths.get(project.buildDir.absolutePath, "classes", "test").toAbsolutePath())
-    classpath += sourceSets.main.runtimeClasspath + sourceSets.test.runtimeClasspath
-    main = "org.junit.platform.console.ConsoleLauncher"
-    args = ["-c", "xyz.eginez.junit.TestSimple"]
-}
-customTest.dependsOn(classes)
-
-def buildTest = tasks.create(name: "buildTest", type: Exec) {
-    def classpath = files(Paths.get(project.buildDir.absolutePath, "classes", "java", "test").toAbsolutePath())
-    classpath += sourceSets.test.runtimeClasspath.filter { !it.absolutePath.contains("org.graalvm")  }
-
-    //TODO what do we do with classes that were discovered?
-    def args = ["-c", "xyz.eginez.junit.TestSimple"]
-
-    def execLine = ["native-image"]
-    if (project.hasProperty("debug")) {
-        execLine.add('--debug-attach')
-    }
-
-    def main = "org.junit.platform.console.ConsoleLauncher"
-    execLine.addAll(['--verbose',
-                     '--no-server',
-                     '--allow-incomplete-classpath',
-                     '--report-unsupported-elements-at-runtime',
-                     '--enable-all-security-services',
-                     '-H:+ReportExceptionStackTraces',
-                     '-H:+TraceClassInitialization',
-                     "-H:Path=${project.buildDir}",
-                     "-H:Name=testBin"])
-    def allcp = classpath.toString()
-    def rcp = classpath.join(":")
-    execLine.addAll(['--no-fallback', '-cp', rcp])
-    execLine.add(main)
-    setCommandLine(execLine)
-}
-
-buildTest.dependsOn(classes, test)
-
-def runTest = tasks.create(name: "runTest", type: Exec) {
-    def testName = "testBin"
-    def path = Paths.get(project.buildDir.absolutePath, testName).toAbsolutePath().toString()
-    setCommandLine([path])
-}
-runTest.dependsOn(buildTest)

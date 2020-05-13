@@ -1,2 +1,4 @@
-rootProject.name = 'junit-native-image'
+rootProject.name = 'xyz.eginez.junit-native-image'
+include 'launcher'
+include 'sample'
 

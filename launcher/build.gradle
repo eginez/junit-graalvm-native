@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+group 'xyz.eginez'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
+    compile group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.6.2'
+    compile group: 'org.junit.platform', name: 'junit-platform-console', version: '1.6.2'
+    compile ("org.junit.platform:junit-platform-launcher:1.6.2")
+    compileOnly (group: 'org.graalvm.nativeimage', name: 'svm', version: '20.0.0')
+}
+
