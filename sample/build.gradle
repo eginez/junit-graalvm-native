@@ -21,6 +21,7 @@ dependencies {
 test {
     useJUnitPlatform()
     testLogging {
+
         events "passed", "skipped", "failed"
     }
 }
@@ -60,7 +61,7 @@ def buildTest = tasks.create(name: "buildTest", type: Exec) {
                      '-H:+ReportExceptionStackTraces',
                      '-H:+TraceClassInitialization',
                      "-H:Path=${project.buildDir}",
-                     '-H:+PrintClassInitialization',
+                     //'-H:+PrintClassInitialization',
                      "-H:Name=testBin"])
     def allcp = classpath.toString()
     def rcp = classpath.join(":")

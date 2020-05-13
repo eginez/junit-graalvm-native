@@ -81,7 +81,7 @@ public class JUnitFeature implements Feature {
                     if (testSource instanceof ClassSource) {
                         ClassSource classSource = (ClassSource) testSource;
                         System.out.println("Registering " + classSource.getClassName());
-                        RuntimeReflection.register(classSource.getJavaClass());
+                        RuntimeReflection.registerForReflectiveInstantiation(classSource.getJavaClass());
                     } else if (testSource instanceof MethodSource) {
                         // ignore
                     } else {
@@ -89,6 +89,4 @@ public class JUnitFeature implements Feature {
                     }
                 });
     }
-
-
 }
