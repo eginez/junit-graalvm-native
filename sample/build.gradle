@@ -44,8 +44,6 @@ def buildTest = tasks.create(name: "buildTest", type: Exec) {
     def classpath = files(Paths.get(project.buildDir.absolutePath, "classes", "java", "test").toAbsolutePath())
     classpath += sourceSets.test.runtimeClasspath.filter { !it.absolutePath.contains("org.graalvm")  }
 
-    //TODO what do we do with classes that were discovered?
-    def args = ["-c", "xyz.eginez.xyz.eginez.junit.TestSimple"]
 
     def execLine = ["native-image"]
     if (project.hasProperty("debug")) {
@@ -74,7 +72,8 @@ buildTest.dependsOn(classes, test)
 
 def runTest = tasks.create(name: "runTest", type: Exec) {
     def testName = "testBin"
+    def args = ["-c", "xyz.eginez.xyz.eginez.junit.TestSimple"]
     def path = Paths.get(project.buildDir.absolutePath, testName).toAbsolutePath().toString()
-    setCommandLine([path])
+    setCommandLine([path] + args)
 }
 runTest.dependsOn(buildTest)

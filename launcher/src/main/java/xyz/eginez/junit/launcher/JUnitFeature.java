@@ -1,15 +1,10 @@
 package xyz.eginez.junit.launcher;
 
 import com.oracle.svm.core.annotate.AutomaticFeature;
-import com.oracle.svm.hosted.classinitialization.ClassInitializationConfiguration;
-import org.graalvm.nativeimage.ImageInfo;
 import org.graalvm.nativeimage.ImageSingletons;
 import org.graalvm.nativeimage.hosted.Feature;
 import org.graalvm.nativeimage.hosted.RuntimeClassInitialization;
 import org.graalvm.nativeimage.hosted.RuntimeReflection;
-import org.graalvm.nativeimage.impl.ReflectionRegistry;
-import org.junit.jupiter.api.Test;
-import org.junit.platform.engine.DiscoverySelector;
 import org.junit.platform.engine.TestSource;
 import org.junit.platform.engine.discovery.DiscoverySelectors;
 import org.junit.platform.engine.support.descriptor.ClassSource;
@@ -21,7 +16,6 @@ import org.junit.platform.launcher.TestPlan;
 import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -38,19 +32,25 @@ public class JUnitFeature implements Feature {
     @Override
     public void beforeAnalysis(BeforeAnalysisAccess access) {
         RuntimeClassInitialization.initializeAtBuildTime("org.junit");
-        registerTestPlan();
+        RuntimeClassInitialization.initializeAtBuildTime(NativeImageLauncher.class);
+
+        Launcher launcher = LauncherFactory.create();
+        registerTestPlan(launcher);
+        saveCommandLineOptions(launcher);
+        ImageSingletons.add(Launcher.class, new NativeImageLauncher(launcher));
     }
 
-    private static void registerTestPlan() {
-        // Run a launcher to discover tests and register classes for reflection
-        Launcher launcher = LauncherFactory.create();
+    private static void saveCommandLineOptions(Launcher launcher) {
+    }
+
+    private static void registerTestPlan(Launcher launcher) {
+        // Run a a junit launcher to discover tests and register classes for reflection
         URLClassLoader contextClassLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
         URL[] urls = contextClassLoader.getURLs();
         Set<Path> classpathRoots = Stream.of(urls)//
                 .map(url -> {
                     try {
-                        URI uri = url.toURI();
-                        return uri;
+                        return url.toURI();
                     } catch (URISyntaxException e) {
                         throw new RuntimeException("Test discovery failed due to" +
                                 "URL to URI conversion problems of the classpath roots.", e);
